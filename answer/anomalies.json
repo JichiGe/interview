@@ -6,6 +6,15 @@
         "field": "fqdn",
         "type": "missing_value",
         "value": ""
+      },
+      {
+        "field": "mac",
+        "type": "duplicate_value",
+        "value": "AA:BB:CC:DD:EE:FF",
+        "duplicated_in_rows": [
+          "1",
+          "3"
+        ]
       }
     ]
   },
@@ -31,6 +40,15 @@
         "field": "fqdn",
         "type": "missing_value",
         "value": ""
+      },
+      {
+        "field": "mac",
+        "type": "duplicate_value",
+        "value": "AA:BB:CC:DD:EE:FF",
+        "duplicated_in_rows": [
+          "1",
+          "3"
+        ]
       }
     ]
   },
@@ -56,6 +74,11 @@
         "field": "fqdn",
         "type": "missing_value",
         "value": ""
+      },
+      {
+        "field": "subnet_cidr",
+        "type": "not_derived",
+        "value": ""
       }
     ]
   },
@@ -69,6 +92,11 @@
       },
       {
         "field": "mac",
+        "type": "missing_value",
+        "value": ""
+      },
+      {
+        "field": "owner",
         "type": "missing_value",
         "value": ""
       }
@@ -91,6 +119,16 @@
         "field": "site_normalized",
         "type": "missing_value",
         "value": ""
+      },
+      {
+        "field": "owner",
+        "type": "missing_value",
+        "value": ""
+      },
+      {
+        "field": "hostname/device_type",
+        "type": "inconsistent_hostname_devicetype",
+        "value": "hostname is 'host-apipa' but device_type is 'workstation'"
       }
     ]
   },
@@ -106,6 +144,15 @@
         "field": "mac",
         "type": "missing_value",
         "value": ""
+      },
+      {
+        "field": "ip",
+        "type": "duplicate_value",
+        "value": "10.10.10.10",
+        "duplicated_in_rows": [
+          "8",
+          "14"
+        ]
       }
     ]
   },
@@ -129,6 +176,11 @@
       },
       {
         "field": "site_normalized",
+        "type": "missing_value",
+        "value": ""
+      },
+      {
+        "field": "owner",
         "type": "missing_value",
         "value": ""
       },
@@ -163,6 +215,11 @@
         "value": ""
       },
       {
+        "field": "owner",
+        "type": "missing_value",
+        "value": ""
+      },
+      {
         "field": "device_type",
         "type": "classified_as_unknown",
         "value": ""
@@ -184,6 +241,11 @@
       },
       {
         "field": "site_normalized",
+        "type": "missing_value",
+        "value": ""
+      },
+      {
+        "field": "owner",
         "type": "missing_value",
         "value": ""
       },
@@ -213,6 +275,11 @@
         "value": ""
       },
       {
+        "field": "owner",
+        "type": "missing_value",
+        "value": ""
+      },
+      {
         "field": "device_type",
         "type": "classified_as_unknown",
         "value": ""
@@ -229,6 +296,16 @@
       },
       {
         "field": "mac",
+        "type": "missing_value",
+        "value": ""
+      },
+      {
+        "field": "subnet_cidr",
+        "type": "not_derived",
+        "value": ""
+      },
+      {
+        "field": "owner",
         "type": "missing_value",
         "value": ""
       }
@@ -251,6 +328,20 @@
         "field": "site_normalized",
         "type": "missing_value",
         "value": ""
+      },
+      {
+        "field": "owner",
+        "type": "missing_value",
+        "value": ""
+      },
+      {
+        "field": "ip",
+        "type": "duplicate_value",
+        "value": "10.10.10.10",
+        "duplicated_in_rows": [
+          "8",
+          "14"
+        ]
       }
     ]
   },
@@ -274,6 +365,11 @@
       },
       {
         "field": "site_normalized",
+        "type": "missing_value",
+        "value": ""
+      },
+      {
+        "field": "owner",
         "type": "missing_value",
         "value": ""
       },

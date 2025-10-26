@@ -285,17 +285,25 @@ def process_row(row, anomalies):
             })
             steps.append(f"{field}_missing")
 
-    # Final check for unresolved device_type
-    if not processed.get("device_type"):
+    # Check for missing subnet_cidr (only if IP was valid)
+    if processed.get("ip_valid") and not processed.get("subnet_cidr"):
         anomalies.append({
             "source_row_id": source_row_id,
-            "issues": [{"field": "device_type", "type": "unresolved_field", "value": raw_device_type}],
-            "recommended_actions": ["Device type could not be determined. Manual review required."]
+            "issues": [{"field": "subnet_cidr", "type": "not_derived", "value": ""}],
+            "recommended_actions": ["Subnet CIDR was not derived (e.g., for public, loopback, or link-local IPs). Review if this is expected."]
         })
-        steps.append("device_type_unresolved")
+        steps.append("subnet_cidr_not_derived")
 
-    # Final check for unresolved owner
-    if raw_owner and not processed.get("owner_team") and not processed.get("owner_email"):
+    # Check for missing owner
+    if not raw_owner:
+        anomalies.append({
+            "source_row_id": source_row_id,
+            "issues": [{"field": "owner", "type": "missing_value", "value": ""}],
+            "recommended_actions": ["Owner field is empty. Manual review required."]
+        })
+        steps.append("owner_missing")
+    # Check for unresolved owner (if field was not empty but couldn't be parsed)
+    elif raw_owner and not processed.get("owner_team") and not processed.get("owner_email"):
         anomalies.append({
             "source_row_id": source_row_id,
             "issues": [{"field": "owner", "type": "unresolved_field", "value": raw_owner}],
@@ -311,6 +319,48 @@ def process_row(row, anomalies):
             "recommended_actions": ["Device type was classified as 'unknown'. Manual investigation is required."]
         })
         steps.append("device_type_is_unknown")
+    # Final check for unresolved device_type
+    elif not processed.get("device_type"):
+        anomalies.append({
+            "source_row_id": source_row_id,
+            "issues": [{"field": "device_type", "type": "unresolved_field", "value": raw_device_type}],
+            "recommended_actions": ["Device type could not be determined. Manual review required."]
+        })
+        steps.append("device_type_unresolved")
+
+    # --- Cross-Field Consistency Check ---
+    hostname_lower = processed.get("hostname", "").lower()
+    final_device_type = processed.get("device_type")
+
+    if hostname_lower and final_device_type:
+        consistency_map = {
+            "server": ["server", "srv"],
+            "router": ["router", "rtr", "gw"],
+            "switch": ["switch", "sw"],
+            "firewall": ["firewall", "fw"],
+            "printer": ["printer", "print"],
+            "access-point": ["ap"]
+        }
+
+        inferred_type = None
+        for dtype, keywords in consistency_map.items():
+            if inferred_type: break
+            for keyword in keywords:
+                if keyword in hostname_lower:
+                    inferred_type = dtype
+                    break
+        
+        if inferred_type and inferred_type != final_device_type:
+            anomalies.append({
+                "source_row_id": source_row_id,
+                "issues": [{
+                    "field": "hostname/device_type",
+                    "type": "inconsistent_hostname_devicetype",
+                    "value": f"hostname is '{processed.get('hostname')}' but device_type is '{final_device_type}'"
+                }],
+                "recommended_actions": [f"Hostname suggests device should be a '{inferred_type}', but it is classified as '{final_device_type}'. Manual verification needed."]
+            })
+            steps.append("inconsistent_host_type")
 
     processed["normalization_steps"] = "|".join(steps)
     return processed
@@ -336,6 +386,51 @@ def main():
         writer.writeheader()
         writer.writerows(cleaned_rows)
     print(f"Successfully wrote cleaned data to {OUTPUT_CSV}")
+
+    # --- Duplicate Value Detection ---
+    ip_counts = {}
+    mac_counts = {}
+    hostname_counts = {}
+
+    # First pass: count occurrences of values
+    for row in cleaned_rows:
+        # Only check for duplicates on valid, non-special IPs
+        if row.get("ip_valid") and row.get("ip"):
+            try:
+                ip_obj = ipaddress.ip_address(row["ip"])
+                if not (ip_obj.is_loopback or ip_obj.is_link_local or ip_obj.is_multicast or ip_obj.is_unspecified):
+                    ip_counts.setdefault(row["ip"], []).append(row["source_row_id"])
+            except ValueError:
+                pass  # Ignore errors on values that might be invalid despite the flag
+
+        if row.get("mac_valid") and row.get("mac"):
+            mac_counts.setdefault(row["mac"], []).append(row["source_row_id"])
+        
+        if row.get("hostname_valid") and row.get("hostname"):
+            hostname_counts.setdefault(row["hostname"].lower(), []).append(row["source_row_id"])
+
+    # Second pass: create anomalies for any duplicates found
+    duplicate_checks = {
+        "ip": ip_counts,
+        "mac": mac_counts,
+        "hostname": hostname_counts
+    }
+
+    for field, counts in duplicate_checks.items():
+        for value, row_ids in counts.items():
+            if len(row_ids) > 1:
+                # This value is a duplicate, create an anomaly for all rows that have it
+                for row_id in row_ids:
+                    anomalies.append({
+                        "source_row_id": row_id,
+                        "issues": [{
+                            "field": field,
+                            "type": "duplicate_value",
+                            "value": value,
+                            "duplicated_in_rows": row_ids
+                        }],
+                        "recommended_actions": [f"This {field} is a duplicate. See 'duplicated_in_rows' for all conflicting records."]
+                    })
 
     # Group anomalies by source_row_id
     grouped_anomalies = {}
