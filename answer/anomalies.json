@@ -16,6 +16,10 @@
           "3"
         ]
       }
+    ],
+    "recommended_actions": [
+      "FQDN is missing. If possible, derive from hostname or investigate source system. Manual review required.",
+      "This mac is a duplicate. See 'duplicated_in_rows' for all conflicting records."
     ]
   },
   {
@@ -26,6 +30,9 @@
         "type": "octet_out_of_range",
         "value": "10.0.1.300"
       }
+    ],
+    "recommended_actions": [
+      "Correct IP or mark record for review"
     ]
   },
   {
@@ -50,6 +57,11 @@
           "3"
         ]
       }
+    ],
+    "recommended_actions": [
+      "Correct IP or mark record for review",
+      "FQDN is missing. If possible, derive from hostname or investigate source system. Manual review required.",
+      "This mac is a duplicate. See 'duplicated_in_rows' for all conflicting records."
     ]
   },
   {
@@ -65,6 +77,10 @@
         "type": "missing_value",
         "value": ""
       }
+    ],
+    "recommended_actions": [
+      "Correct IP or mark record for review",
+      "FQDN is missing. If possible, derive from hostname or investigate source system. Manual review required."
     ]
   },
   {
@@ -80,6 +96,10 @@
         "type": "not_derived",
         "value": ""
       }
+    ],
+    "recommended_actions": [
+      "FQDN is missing. If possible, derive from hostname or investigate source system. Manual review required.",
+      "Subnet CIDR was not derived (e.g., for public, loopback, or link-local IPs). Review if this is expected."
     ]
   },
   {
@@ -100,6 +120,11 @@
         "type": "missing_value",
         "value": ""
       }
+    ],
+    "recommended_actions": [
+      "FQDN is missing. If possible, derive from hostname or investigate source system. Manual review required.",
+      "MAC address is missing. This is a critical field for DHCP services. Manual review required.",
+      "Owner field is empty. Manual review required."
     ]
   },
   {
@@ -130,6 +155,13 @@
         "type": "inconsistent_hostname_devicetype",
         "value": "hostname is 'host-apipa' but device_type is 'workstation'"
       }
+    ],
+    "recommended_actions": [
+      "FQDN is missing. If possible, derive from hostname or investigate source system. Manual review required.",
+      "MAC address is missing. This is a critical field for DHCP services. Manual review required.",
+      "Site information is missing. Manual review required.",
+      "Owner field is empty. Manual review required.",
+      "Hostname suggests device should be a 'access-point', but it is classified as 'workstation'. Manual verification needed."
     ]
   },
   {
@@ -154,6 +186,11 @@
           "14"
         ]
       }
+    ],
+    "recommended_actions": [
+      "FQDN is missing. If possible, derive from hostname or investigate source system. Manual review required.",
+      "MAC address is missing. This is a critical field for DHCP services. Manual review required.",
+      "This ip is a duplicate. See 'duplicated_in_rows' for all conflicting records."
     ]
   },
   {
@@ -189,6 +226,14 @@
         "type": "classified_as_unknown",
         "value": ""
       }
+    ],
+    "recommended_actions": [
+      "Correct IP or mark record for review",
+      "FQDN is missing. If possible, derive from hostname or investigate source system. Manual review required.",
+      "MAC address is missing. This is a critical field for DHCP services. Manual review required.",
+      "Site information is missing. Manual review required.",
+      "Owner field is empty. Manual review required.",
+      "Device type was classified as 'unknown'. Manual investigation is required."
     ]
   },
   {
@@ -224,6 +269,14 @@
         "type": "classified_as_unknown",
         "value": ""
       }
+    ],
+    "recommended_actions": [
+      "Correct IP or mark record for review",
+      "FQDN is missing. If possible, derive from hostname or investigate source system. Manual review required.",
+      "MAC address is missing. This is a critical field for DHCP services. Manual review required.",
+      "Site information is missing. Manual review required.",
+      "Owner field is empty. Manual review required.",
+      "Device type was classified as 'unknown'. Manual investigation is required."
     ]
   },
   {
@@ -254,6 +307,13 @@
         "type": "classified_as_unknown",
         "value": ""
       }
+    ],
+    "recommended_actions": [
+      "FQDN is missing. If possible, derive from hostname or investigate source system. Manual review required.",
+      "MAC address is missing. This is a critical field for DHCP services. Manual review required.",
+      "Site information is missing. Manual review required.",
+      "Owner field is empty. Manual review required.",
+      "Device type was classified as 'unknown'. Manual investigation is required."
     ]
   },
   {
@@ -284,6 +344,13 @@
         "type": "classified_as_unknown",
         "value": ""
       }
+    ],
+    "recommended_actions": [
+      "FQDN is missing. If possible, derive from hostname or investigate source system. Manual review required.",
+      "MAC address is missing. This is a critical field for DHCP services. Manual review required.",
+      "Site information is missing. Manual review required.",
+      "Owner field is empty. Manual review required.",
+      "Device type was classified as 'unknown'. Manual investigation is required."
     ]
   },
   {
@@ -309,6 +376,12 @@
         "type": "missing_value",
         "value": ""
       }
+    ],
+    "recommended_actions": [
+      "FQDN is missing. If possible, derive from hostname or investigate source system. Manual review required.",
+      "MAC address is missing. This is a critical field for DHCP services. Manual review required.",
+      "Subnet CIDR was not derived (e.g., for public, loopback, or link-local IPs). Review if this is expected.",
+      "Owner field is empty. Manual review required."
     ]
   },
   {
@@ -343,6 +416,13 @@
           "14"
         ]
       }
+    ],
+    "recommended_actions": [
+      "FQDN is missing. If possible, derive from hostname or investigate source system. Manual review required.",
+      "MAC address is missing. This is a critical field for DHCP services. Manual review required.",
+      "Site information is missing. Manual review required.",
+      "Owner field is empty. Manual review required.",
+      "This ip is a duplicate. See 'duplicated_in_rows' for all conflicting records."
     ]
   },
   {
@@ -378,6 +458,14 @@
         "type": "classified_as_unknown",
         "value": ""
       }
+    ],
+    "recommended_actions": [
+      "Correct IP or mark record for review",
+      "FQDN is missing. If possible, derive from hostname or investigate source system. Manual review required.",
+      "MAC address is missing. This is a critical field for DHCP services. Manual review required.",
+      "Site information is missing. Manual review required.",
+      "Owner field is empty. Manual review required.",
+      "Device type was classified as 'unknown'. Manual investigation is required."
     ]
   }
 ]

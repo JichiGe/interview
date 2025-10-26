@@ -439,10 +439,13 @@ def main():
         if row_id not in grouped_anomalies:
             grouped_anomalies[row_id] = {
                 "source_row_id": row_id,
-                "issues": []
+                "issues": [],
+                "recommended_actions": []
             }
-        # Extend the list of issues for that row_id
+        # Extend the list of issues and actions for that row_id
         grouped_anomalies[row_id]["issues"].extend(anomaly["issues"])
+        if "recommended_actions" in anomaly:
+            grouped_anomalies[row_id]["recommended_actions"].extend(anomaly["recommended_actions"])
     
     final_anomalies_list = list(grouped_anomalies.values())
 
