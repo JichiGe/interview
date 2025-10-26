@@ -1,16 +1,16 @@
-ip,ip_valid,ip_version,subnet_cidr,reverse_ptr,hostname,hostname_valid,fqdn,fqdn_consistent,mac,mac_valid,owner,owner_email,owner_team,device_type,device_type_confidence,site,site_normalized,source_row_id,normalization_steps
-192.168.10.5,True,4,192.168.10.0/24,5.10.168.192.in-addr.arpa,HOST01,True,,,AA:BB:CC:DD:EE:FF,True,priya (platform) priya@corp.example.com,priya@corp.example.com,platform,server,,BLR Campus,blr-campus,1,ip_normalized|mac_normalized|owner_parsed|site_normalized
-10.0.1.300,False,,,,host-02,True,host-02.local,True,11:22:33:44:55:66,True,ops,,,,,HQ Bldg 1,hq-bldg-1,2,ip_invalid_octet_out_of_range|mac_normalized|site_normalized
-10.0.1,False,,,,host03,True,,,AA:BB:CC:DD:EE:FF,True,jane@corp.example.com,jane@corp.example.com,,switch,,HQ-BUILDING-1,hq-building-1,3,ip_invalid_wrong_part_count|mac_normalized|owner_parsed|site_normalized
-10.0.1.1.2,False,,,,printer-01,True,,,00:11:22:33:44:55,True,Facilities,,,printer,,HQ,hq,4,ip_invalid_wrong_part_count|mac_normalized|site_normalized
-fe80:0000:0000:0000:0000:0000:0000:0001,True,6,,1.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.8.e.f.ip6.arpa,iot-cam01,True,,,00:AA:BB:CC:DD:EE,True,sec,,,iot,,Lab-1,lab-1,5,ip_normalized|mac_normalized|site_normalized
-127.0.0.1,True,4,127.0.0.0/24,1.0.0.127.in-addr.arpa,local-test,True,,,,False,,,,,,N/A,n/a,6,ip_normalized|site_normalized
-169.254.10.20,True,4,169.254.10.0/24,20.10.254.169.in-addr.arpa,host-apipa,True,,,,False,,,,,,,,7,ip_normalized
-10.10.10.10,True,4,10.10.10.0/24,10.10.10.10.in-addr.arpa,srv-10,True,,,,False,platform,,,server,,BLR campus,blr-campus,8,ip_normalized|site_normalized
-abc.def.ghi.jkl,False,,,,badhost,True,,,,False,,,,,,,,9,ip_invalid_non_numeric
-192.168.1.-1,False,,,,neg,True,,,,False,,,,,,,,10,ip_invalid_octet_out_of_range
-192.168.1.255,True,4,192.168.1.0/24,255.1.168.192.in-addr.arpa,bcast,True,,,,False,,,,,,,,11,ip_normalized
-192.168.1.0,True,4,192.168.1.0/24,0.1.168.192.in-addr.arpa,netid,True,,,,False,,,,,,,,12,ip_normalized
-8.8.8.8,True,4,,8.8.8.8.in-addr.arpa,dns-google,True,,,,False,,,,router,,DC-1,dc-1,13,ip_normalized|site_normalized
-10.10.10.10,True,4,10.10.10.0/24,10.10.10.10.in-addr.arpa,host-10,True,,,,False,,,,server,,,,14,ip_normalized
-N/A,False,,,,missing-ip,True,,,,False,,,,,,,,15,ip_invalid_wrong_part_count
+source_row_id,ip,ip_valid,ip_version,subnet_cidr,reverse_ptr,hostname,hostname_valid,fqdn,fqdn_consistent,mac,mac_valid,device_type,device_type_confidence,owner,owner_email,owner_team,site,site_normalized,normalization_steps
+1,192.168.10.5,True,4,192.168.10.0/24,5.10.168.192.in-addr.arpa,HOST01,True,,,AA:BB:CC:DD:EE:FF,True,server,0.9,priya (platform) priya@corp.example.com,priya@corp.example.com,platform,BLR Campus,blr-campus,ip_normalized|mac_normalized|owner_parsed|site_normalized|device_type_classified|fqdn_missing
+2,10.0.1.300,False,,,,host-02,True,host-02.local,True,11:22:33:44:55:66,True,router,0.9,ops,operations@corp.example.com,operations,HQ Bldg 1,hq-bldg-1,ip_invalid_octet_out_of_range|mac_normalized|owner_from_llm|site_normalized|device_type_classified
+3,10.0.1,False,,,,host03,True,,,AA:BB:CC:DD:EE:FF,True,switch,0.9,jane@corp.example.com,jane@corp.example.com,,HQ-BUILDING-1,hq-building-1,ip_invalid_wrong_part_count|mac_normalized|owner_parsed|site_normalized|device_type_classified|fqdn_missing
+4,10.0.1.1.2,False,,,,printer-01,True,,,00:11:22:33:44:55,True,printer,0.9,Facilities,facilities@corp.example.com,facilities,HQ,hq,ip_invalid_wrong_part_count|mac_normalized|owner_from_llm|site_normalized|device_type_classified|fqdn_missing
+5,fe80:0000:0000:0000:0000:0000:0000:0001,True,6,,1.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.8.e.f.ip6.arpa,iot-cam01,True,,,00:AA:BB:CC:DD:EE,True,iot,0.9,sec,security@corp.example.com,security,Lab-1,lab-1,ip_normalized|mac_normalized|owner_from_llm|site_normalized|device_type_classified|fqdn_missing
+6,127.0.0.1,True,4,127.0.0.0/24,1.0.0.127.in-addr.arpa,local-test,True,,,,False,server,0.85,,,,N/A,n/a,ip_normalized|site_normalized|device_type_from_llm|fqdn_missing|mac_missing
+7,169.254.10.20,True,4,169.254.10.0/24,20.10.254.169.in-addr.arpa,host-apipa,True,,,,False,workstation,0.9,,,,,,ip_normalized|device_type_from_llm|fqdn_missing|mac_missing|site_normalized_missing
+8,10.10.10.10,True,4,10.10.10.0/24,10.10.10.10.in-addr.arpa,srv-10,True,,,,False,server,0.9,platform,platform@corp.example.com,platform,BLR campus,blr-campus,ip_normalized|owner_from_llm|site_normalized|device_type_classified|fqdn_missing|mac_missing
+9,abc.def.ghi.jkl,False,,,,badhost,True,,,,False,unknown,0.95,,,,,,ip_invalid_non_numeric|device_type_from_llm|fqdn_missing|mac_missing|site_normalized_missing|device_type_is_unknown
+10,192.168.1.-1,False,,,,neg,True,,,,False,unknown,0.9,,,,,,ip_invalid_octet_out_of_range|device_type_from_llm|fqdn_missing|mac_missing|site_normalized_missing|device_type_is_unknown
+11,192.168.1.255,True,4,192.168.1.0/24,255.1.168.192.in-addr.arpa,bcast,True,,,,False,unknown,0.95,,,,,,ip_normalized|device_type_from_llm|fqdn_missing|mac_missing|site_normalized_missing|device_type_is_unknown
+12,192.168.1.0,True,4,192.168.1.0/24,0.1.168.192.in-addr.arpa,netid,True,,,,False,unknown,0.95,,,,,,ip_normalized|device_type_from_llm|fqdn_missing|mac_missing|site_normalized_missing|device_type_is_unknown
+13,8.8.8.8,True,4,,8.8.8.8.in-addr.arpa,dns-google,True,,,,False,router,0.9,,,google-dns,DC-1,dc-1,ip_normalized|owner_from_llm|site_normalized|device_type_classified|fqdn_missing|mac_missing
+14,10.10.10.10,True,4,10.10.10.0/24,10.10.10.10.in-addr.arpa,host-10,True,,,,False,server,0.9,,,,,,ip_normalized|device_type_classified|fqdn_missing|mac_missing|site_normalized_missing
+15,N/A,False,,,,missing-ip,True,,,,False,unknown,0.9,,,,,,ip_invalid_wrong_part_count|device_type_from_llm|fqdn_missing|mac_missing|site_normalized_missing|device_type_is_unknown

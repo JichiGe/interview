@@ -10,14 +10,34 @@ INPUT_CSV = Path(__file__).parent / "inventory_raw.csv"
 OUTPUT_CSV = Path(__file__).parent / "inventory_clean.csv"
 ANOMALIES_JSON = Path(__file__).parent / "anomalies.json"
 TARGET_HEADERS = [
+    "source_row_id",
     "ip", "ip_valid", "ip_version", "subnet_cidr", "reverse_ptr",
     "hostname", "hostname_valid", "fqdn", "fqdn_consistent",
     "mac", "mac_valid",
-    "owner", "owner_email", "owner_team",
     "device_type", "device_type_confidence",
+    "owner", "owner_email", "owner_team",
     "site", "site_normalized",
-    "source_row_id", "normalization_steps"
+    "normalization_steps"
 ]
+
+# --- LLM Overrides ---
+LLM_CLASSIFICATIONS = {
+    "6": {"device_type": "server", "confidence": 0.85},
+    "7": {"device_type": "workstation", "confidence": 0.9},
+    "9": {"device_type": "unknown", "confidence": 0.95},
+    "10": {"device_type": "unknown", "confidence": 0.9},
+    "11": {"device_type": "unknown", "confidence": 0.95},
+    "12": {"device_type": "unknown", "confidence": 0.95},
+    "15": {"device_type": "unknown", "confidence": 0.9}
+}
+
+LLM_OWNER_OVERRIDES = {
+    "2": {"owner_team": "operations", "owner_email": "operations@corp.example.com"},
+    "4": {"owner_team": "facilities", "owner_email": "facilities@corp.example.com"},
+    "5": {"owner_team": "security", "owner_email": "security@corp.example.com"},
+    "8": {"owner_team": "platform", "owner_email": "platform@corp.example.com"},
+    "13": {"owner_team": "google-dns", "owner_email": None}
+}
 
 # --- Data Processing Functions ---
 
@@ -111,6 +131,33 @@ def normalize_site(site_str):
         return None
     return site_str.strip().lower().replace(' ', '-')
 
+def classify_device_type(device_type_str, notes_str):
+    """Classifies device type using deterministic rules and flags ambiguous cases for LLM."""
+    if not device_type_str and not notes_str:
+        return None, 0.1, True # Needs LLM
+
+    # Combine device_type and notes for better context
+    context_str = f"{device_type_str or ''} {notes_str or ''}".lower().strip()
+
+    # Simple keyword matching
+    device_map = {
+        "server": ["server", "db host"],
+        "switch": ["switch"],
+        "router": ["router", "gw"],
+        "firewall": ["firewall"],
+        "printer": ["printer"],
+        "iot": ["iot", "camera"],
+        "access-point": ["access-point", "ap"],
+    }
+
+    for device, keywords in device_map.items():
+        for keyword in keywords:
+            if keyword in context_str:
+                return device, 0.9, False # High confidence
+
+    # If no rule matches, it needs LLM
+    return device_type_str, 0.3, True
+
 def process_row(row, anomalies):
     """Processes a single row of inventory data."""
     source_row_id = row.get("source_row_id", "")
@@ -184,11 +231,17 @@ def process_row(row, anomalies):
     # --- Owner ---
     raw_owner = row.get("owner", "")
     processed["owner"] = raw_owner.strip()
-    email, team = parse_owner(raw_owner)
-    processed["owner_email"] = email
-    processed["owner_team"] = team
-    if raw_owner and (email or team):
-        steps.append("owner_parsed")
+    if source_row_id in LLM_OWNER_OVERRIDES:
+        owner_result = LLM_OWNER_OVERRIDES[source_row_id]
+        processed["owner_email"] = owner_result["owner_email"]
+        processed["owner_team"] = owner_result["owner_team"]
+        steps.append("owner_from_llm")
+    else:
+        email, team = parse_owner(raw_owner)
+        processed["owner_email"] = email
+        processed["owner_team"] = team
+        if raw_owner and (email or team):
+            steps.append("owner_parsed")
 
     # --- Site ---
     raw_site = row.get("site", "")
@@ -198,12 +251,69 @@ def process_row(row, anomalies):
     if norm_site and norm_site != raw_site.strip():
         steps.append("site_normalized")
 
-    # --- Device Type (Manual step) ---
-    processed["device_type"] = row.get("device_type", "").strip()
+    # --- Device Type ---
+    raw_device_type = row.get("device_type", "")
+    raw_notes = row.get("notes", "")
+
+    if source_row_id in LLM_CLASSIFICATIONS:
+        llm_result = LLM_CLASSIFICATIONS[source_row_id]
+        processed["device_type"] = llm_result["device_type"]
+        processed["device_type_confidence"] = llm_result["confidence"]
+        steps.append("device_type_from_llm")
+    else:
+        device_type, confidence, needs_llm = classify_device_type(raw_device_type, raw_notes)
+        processed["device_type"] = device_type
+        processed["device_type_confidence"] = confidence
+        if needs_llm:
+            steps.append("device_type_requires_llm")
+        else:
+            steps.append("device_type_classified")
+
+    # --- Final Anomaly Check for Remaining Blanks ---
+    final_check_fields = {
+        "fqdn": "FQDN is missing. If possible, derive from hostname or investigate source system.",
+        "mac": "MAC address is missing. This is a critical field for DHCP services.",
+        "site_normalized": "Site information is missing."
+    }
+
+    for field, message in final_check_fields.items():
+        if not processed.get(field):
+            anomalies.append({
+                "source_row_id": source_row_id,
+                "issues": [{"field": field, "type": "missing_value", "value": row.get(field, "")}],
+                "recommended_actions": [message + " Manual review required."]
+            })
+            steps.append(f"{field}_missing")
+
+    # Final check for unresolved device_type
+    if not processed.get("device_type"):
+        anomalies.append({
+            "source_row_id": source_row_id,
+            "issues": [{"field": "device_type", "type": "unresolved_field", "value": raw_device_type}],
+            "recommended_actions": ["Device type could not be determined. Manual review required."]
+        })
+        steps.append("device_type_unresolved")
+
+    # Final check for unresolved owner
+    if raw_owner and not processed.get("owner_team") and not processed.get("owner_email"):
+        anomalies.append({
+            "source_row_id": source_row_id,
+            "issues": [{"field": "owner", "type": "unresolved_field", "value": raw_owner}],
+            "recommended_actions": ["Owner could not be parsed. Manual review required."]
+        })
+        steps.append("owner_unresolved")
+
+    # Final check for 'unknown' device_type
+    if processed.get("device_type") == "unknown":
+        anomalies.append({
+            "source_row_id": source_row_id,
+            "issues": [{"field": "device_type", "type": "classified_as_unknown", "value": raw_device_type}],
+            "recommended_actions": ["Device type was classified as 'unknown'. Manual investigation is required."]
+        })
+        steps.append("device_type_is_unknown")
 
     processed["normalization_steps"] = "|".join(steps)
     return processed
-
 def main():
     """Main function to run the data cleaning process."""
     anomalies = []
@@ -227,8 +337,22 @@ def main():
         writer.writerows(cleaned_rows)
     print(f"Successfully wrote cleaned data to {OUTPUT_CSV}")
 
+    # Group anomalies by source_row_id
+    grouped_anomalies = {}
+    for anomaly in anomalies:
+        row_id = anomaly["source_row_id"]
+        if row_id not in grouped_anomalies:
+            grouped_anomalies[row_id] = {
+                "source_row_id": row_id,
+                "issues": []
+            }
+        # Extend the list of issues for that row_id
+        grouped_anomalies[row_id]["issues"].extend(anomaly["issues"])
+    
+    final_anomalies_list = list(grouped_anomalies.values())
+
     with open(ANOMALIES_JSON, mode='w', encoding='utf-8') as outfile:
-        json.dump(anomalies, outfile, indent=2)
+        json.dump(final_anomalies_list, outfile, indent=2)
     print(f"Successfully wrote anomalies to {ANOMALIES_JSON}")
 
 if __name__ == "__main__":
